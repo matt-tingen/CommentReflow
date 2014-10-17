@@ -1,0 +1,48 @@
+import re
+
+
+class GreatestCommonPrefix:
+    def __init__(self, regex=None):
+        self.regex = re.compile(regex) if regex else None
+
+    def parse(self, strings):
+        if self.regex:
+            new_strings = []
+            for s in strings:
+                r = self.regex.match(s)
+
+                if r is None:
+                    return ''
+
+                new_strings.append(r.group(0))
+
+            strings = new_strings
+
+        match = ''
+
+        for chars in zip(*strings):
+            if self.chars_are_matched(chars):
+                print(True)
+                match += chars[0]
+            else:
+                print(False)
+                break
+
+        return match
+
+
+    def chars_are_matched(self, items):
+        # Don't get the first item with items[0] because
+        # that doesn't allow for empty iterators (for which this method is vacuosly true)
+        # and makes handling single items iterators more complicated
+        print(items)
+        is_first = True
+
+        for item in items:
+            if is_first:
+                prev = item
+                is_first = False
+            elif item != prev:
+                return False
+
+        return True
