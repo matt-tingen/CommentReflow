@@ -82,7 +82,7 @@ class ReflowComment:
         new_paragraph_regex = None if self.new_paragraph_regex is None else re.compile(self.new_paragraph_regex)
 
         # It's easier to do this line by line than to dedent the whole comment
-        # since we have to account for blank lines.
+        # since we have to account for blank lines and comment_start_regex.
         # A paragraph is a string to be wrapped. It is not indented and contains no new lines.
         # A new paragraph is started when a line matches one of the following conditions:
         #     - It contains only whitespace
@@ -125,7 +125,6 @@ class ReflowComment:
                 current_paragraph += ' ' + line_without_start.rstrip()
 
         comment = ''
-        # import pdb; pdb.set_trace()
 
         for indent, paragraph in paragraphs:
             if comment:
@@ -156,14 +155,6 @@ except ImportError:
     pass
 else:
     class CommentReflowCommand(sublime_plugin.TextCommand):
-
-        # This is a comment with blank lines and nested indention. Lorem ipsum dolor sit 
-        #  
-        #
-        #     - amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. 
-        #     - Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. 
-        # Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae
-        # augue.
         def run(self, edit):
             self.get_selection()
 
