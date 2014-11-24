@@ -108,7 +108,6 @@ class TestBasic:
         assert actual == desired
 
     def test_blank_lines_and_list(self):
-        # import pdb; pdb.set_trace()
         actual = self.reflow("""\
     # This is a comment with blank lines and nested indention. Lorem ipsum dolor sit
     #
