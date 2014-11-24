@@ -1,6 +1,17 @@
 import sublime
 import sublime_plugin
 
+    # This is a comment with blank lines and nested indention. Lorem ipsum dolor
+    # sit
+    #
+    #     - amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet
+    #     ipsum mauris.
+    #     - Maecenas congue ligula ac quam viverra nec consectetur ante
+    #     hendrerit.
+    # Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit
+    # amet vitae augue.
+
+
 class CommentReflowCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         self.get_selection()
