@@ -175,7 +175,6 @@ else:
                 reflow = ReflowComment(**self.preferences)
                 self.new_comment = reflow.reflow(self.selected_text)
             except Exception:
-                raise
                 sublime.status_message('Did not recognize selection as a comment')
             else:
                 self.replace_lines(edit)
