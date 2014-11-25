@@ -1,4 +1,4 @@
-from src.gcp import GreatestCommonPrefix
+from src.CommentReflow import GreatestCommonPrefix
 
 class TestBasic:
     gcp = GreatestCommonPrefix()

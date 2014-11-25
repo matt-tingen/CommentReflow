@@ -1,5 +1,5 @@
 from textwrap import dedent
-from src.reflow import ReflowComment
+from src.CommentReflow import ReflowComment
 
 
 def indent(text, indention):
