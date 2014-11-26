@@ -7,5 +7,5 @@
 
 	"comment_reflow_break_on_hyphens": true,
 
-	"comment_reflow_new_paragraph_regex": "(?:[*-]|\\d+[).]) "
+	"comment_reflow_new_paragraph_regex": "[*+-] |\\d+[).] |[ \t]*$"
 }

@@ -10,6 +10,7 @@ class GreatestCommonPrefix:
     def parse(self, strings):
         if self.regex:
             new_strings = []
+
             for s in strings:
                 r = self.regex.match(s)
 
@@ -31,15 +32,16 @@ class GreatestCommonPrefix:
         return match
 
     def chars_are_matched(self, items):
-        # Don't get the first item with items[0] because
-        # that doesn't allow for empty iterators (for which this function is vacuosly true)
-        # and makes handling single items iterators more complicated
+        # Don't get the first item with items[0] because that doesn't allow for
+        # empty iterators (for which this function is vacuosly true) and makes
+        # handling single items iterators more complicated
         is_first = True
 
         for item in items:
             if is_first:
                 if self.whitelist and item not in self.whitelist:
                     return False
+
                 prev = item
                 is_first = False
             elif item != prev:
@@ -80,12 +82,11 @@ class ReflowComment:
         new_paragraph_regex = None if self.new_paragraph_regex is None else re.compile(self.new_paragraph_regex)
 
         # It's easier to do this line by line than to dedent the whole comment
-        # since we have to account for blank lines and comment_start_regex.
+        # since we have to account for comment_start_regex.
         #
         # A paragraph is a string to be wrapped. It is not indented and contains
         # no new lines. A new paragraph is started when a line matches one of
         # the following conditions:
-        #     - It contains only whitespace
         #     - The "start" of the comment changes
         #         - The "start" is whatever is matched by comment_start_regex.
         #     - The rest of the line after the "start" is matched by
@@ -97,28 +98,17 @@ class ReflowComment:
         prev_start = None
         current_paragraph = ''
 
-        # Add a blank string to the end of lists so the actual last item in
-        # lines gets processed since we are processing the previous item in the
-        # loop.
-        for line in lines + ['']:
+        for line in lines:
+            try:
+                start = comment_start_regex.match(line).group(0)
+            except AttributeError:
+                raise ValueError('text contained a line that did not match the comment start regex')
 
-            all_whitespace = bool(re.match(r'^[ \t]*$', line))
-
-            if all_whitespace:
-                line_without_start = ''
-            else:
-                try:
-                    start = comment_start_regex.match(line).group(0)
-                except AttributeError:
-                    raise ValueError('text contained a line that did not match the comment start regex')
-
-                line_without_start = self.remove_prefix(line, start)
-
-            all_whitespace = bool(re.match(r'^[ \t]*$', line_without_start))
+            line_without_start = self.remove_prefix(line, start)
 
             force_new_paragraph = new_paragraph_regex is not None and re.match(self.new_paragraph_regex, line_without_start)
 
-            if all_whitespace or (start != prev_start) or force_new_paragraph:
+            if (start != prev_start) or force_new_paragraph:
                 # New paragraph
                 if prev_start is not None:
                     paragraphs.append((prev_start, current_paragraph))
@@ -128,6 +118,9 @@ class ReflowComment:
             else:
                 # Same paragraph
                 current_paragraph += ' ' + line_without_start.rstrip()
+
+        if current_paragraph:
+            paragraphs.append((prev_start, current_paragraph))
 
         comment = ''
 
@@ -151,6 +144,7 @@ class ReflowComment:
                 comment += indent.rstrip()
 
         return comment
+
 
 # Don't require the sublime modules so the other classes can be tested
 try:

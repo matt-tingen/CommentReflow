@@ -11,7 +11,7 @@ class TestBasic:
         marker='#',
         max_width=80,
         tab_size=6,
-        new_paragraph_regex=r'- ')
+        new_paragraph_regex=r'[ \t]*$|- ')
     reflow = reflow_comment.reflow
 
     def test_no_reflow_needed(self):
