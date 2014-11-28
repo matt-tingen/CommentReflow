@@ -1,7 +1,5 @@
 {
-	"comment_reflow_width": 80,
-
-	"comment_reflow_comment_start_regex": "[ \t]*{}+[ \t]*",
+	"comment_reflow_width": "rulers_first",
 
 	"comment_reflow_break_long_words": false,
 

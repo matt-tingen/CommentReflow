@@ -150,7 +150,7 @@ class ReflowComment:
 try:
     import sublime
     import sublime_plugin
-except:
+except ImportError:
     pass
 else:
     class CommentReflowCommand(sublime_plugin.TextCommand):
@@ -159,62 +159,119 @@ else:
             self.get_region()
             selected_text = self.view.substr(self.region)
 
-            self.get_preferences()
+            if self.get_preferences():
+                reflow = ReflowComment(**self.preferences)
 
-            reflow = ReflowComment(**self.preferences)
-
-            try:
-                self.new_comment = reflow.reflow(selected_text)
-            except Exception:
-                sublime.status_message('Did not recognize selection as a comment')
-            else:
-                self.replace_lines()
+                try:
+                    self.new_comment = reflow.reflow(selected_text)
+                except Exception:
+                    sublime.status_message('Did not recognize selection as a comment')
+                else:
+                    self.replace_lines()
 
         def replace_lines(self):
             self.view.replace(self.edit, self.region, self.new_comment)
 
-        def get_language_specific_settings(self, settings):
-            scopes = self.view.scope_name(self.view.sel()[0].a).split()
+        def get_comment_start(self, settings):
+            marker = settings.get('comment_reflow_marker')
+
+            if marker is None:
+                comment_start_regex = settings.get('comment_reflow_comment_start_regex')
+                scopes = self.view.scope_name(self.view.sel()[0].a).split()
+
+                try:
+                    comment_scope = next(s for s in scopes if s.startswith('comment.line.'))
+                    comment_type = comment_scope.split('.')[2]
+
+                    if comment_type == 'number-sign':
+                        marker_regex = '#'
+                        marker_repeat = '+'
+                    elif comment_type == 'double-slash':
+                        marker_regex = '/'
+                        marker_repeat = '{2,}'
+                    elif comment_type == 'apostrophe':
+                        marker_regex = '\''
+                        marker_repeat = '+'
+                    elif comment_type == 'double-dash':
+                        marker_regex = r'\-'
+                        marker_repeat = '{2,}'
+                    elif comment_type == 'semicolon':
+                        marker_regex = ';'
+                        marker_repeat = '+'
+                    else:
+                        raise ValueError
+                except (StopIteration, ValueError):
+                    # We are not in a comment.line.* scope or we are in one that
+                    # is not accounted for.
+                    sublime.status_message('Either comment_reflow_marker or comment_reflow_comment_start_regex is required for this language')
+                    return False
+
+                try:
+                    comment_start_regex = comment_start_regex.format(
+                        marker=marker_regex, repeat=marker_repeat)
+                except (AttributeError, IndexError, KeyError):
+                    whitespace = r'[ \t]*'
+                    comment_start_regex = whitespace + marker_regex + marker_repeat + whitespace
+
+                self.preferences['comment_start_regex'] = comment_start_regex
+                print(comment_start_regex)
+            else:
+                self.preferences['marker'] = marker
+
+            return True
+
+        def get_max_width(self, settings):
+            width_setting = settings.get('comment_reflow_width')
 
             try:
-                comment_scope = next(s for s in scopes if s.startswith('comment.line.'))
-                comment_type = comment_scope.split('.')[2]
+                try:
+                    max_width = int(width_setting)
+                except ValueError:
+                    if width_setting.startswith('rulers_'):
+                        rulers = settings.get('rulers')
 
-                markers = {'number-sign': r'#+',
-                           'double-slash': r'/{2,}',
-                           'apostrophe': r"'+",
-                           'double-dash': r'\-{2,}',
-                           'semicolon': r';+'}
-                marker_regex = markers[comment_type]
-            except (StopIteration, IndexError, KeyError):
-                # We are not in a comment.line.* scope or we are in one that is
-                # not accounted for.
-                self.marker = settings.get('comment_reflow_marker')
-                self.comment_start_regex = settings.get('comment_reflow_comment_start_regex')
+                        if len(rulers):
+                            which_ruler = width_setting[len('rulers_'):]
 
-                if not self.marker:
-                    raise ValueError
-            else:
-                self.marker = None
-                whitespace = r'[ \t]*'
-                self.comment_start_regex = whitespace + marker_regex + whitespace
+                            if which_ruler == 'first':
+                                ruler_index = 0
+                            elif which_ruler == 'last':
+                                ruler_index = -1
+                            else:
+                                ruler_index = int(which_ruler)
+
+                                # Force ruler_index to the closest valid value
+                                if ruler_index < 0 and abs(ruler_index) > len(rulers):
+                                    ruler_index = 0
+                                elif ruler_index > len(rulers) - 1:
+                                    ruler_index = -1
+
+                            max_width = int(rulers[ruler_index])
+                        else:
+                            max_width = int(settings.get('comment_reflow_width_fallback'))
+                    else:
+                        raise ValueError
+            except (TypeError, ValueError):
+                max_width = 80
+
+            self.preferences['max_width'] = max_width
 
         def get_preferences(self):
             settings = self.view.settings()
-            self.get_language_specific_settings(settings)
+            self.preferences = {}
 
-            # I would like to make the ruler the fall back for max_width but I
-            # have not been able to find a way to get the current ruler besides
-            # the setting 'rulers' which seems to be a global setting and
-            # doesn't refer to the current file's ruler.
-            self.preferences = {
-                'marker': self.marker,
-                'max_width': int(settings.get('comment_reflow_width', 80)),
+            if not self.get_comment_start(settings):
+                return False
+
+            self.get_max_width(settings)
+
+            self.preferences.update({
                 'tab_size': int(settings.get('tab_size', 4)),
                 'break_long_words': bool(settings.get('comment_reflow_break_long_words', False)),
                 'break_on_hyphens': bool(settings.get('comment_reflow_break_on_hyphens', True)),
-                'comment_start_regex': self.comment_start_regex,
-                'new_paragraph_regex': settings.get('comment_reflow_new_paragraph_regex', r'[*-] ')}
+                'new_paragraph_regex': settings.get('comment_reflow_new_paragraph_regex', r'[*-] ')
+            })
+            return True
 
         def get_region(self):
             # This assumes there is only one selection. We do not need to check
