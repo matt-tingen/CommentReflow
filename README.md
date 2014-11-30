@@ -142,7 +142,7 @@ Unless using this specifically for a language with no marker, `comment_reflow_co
 
 ### `comment_reflow_new_paragraph_regex`
 **Purpose:** Defines whether the body of a line should force a new paragraph.<br>
-**Default:** `[*+-] |\d+[).] |[ \t]*$`
+**Default:** `[*+-] |\d+[).] |[ \t]*$`<br>
 Matches Markdown-style lists or when the entire body is whitespace or empty.<br>
 **Values:** String containing a regular expression.
 
