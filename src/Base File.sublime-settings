@@ -9,5 +9,5 @@
 
 	"comment_reflow_opening_regex": "[ \\t]*{marker}{repeat}[ \\t]*",
 
-	"comment_reflow_new_paragraph_regex": "[*+-] |\\d+[).] |[ \t]*$"
+	"comment_reflow_new_paragraph_regex": "[*+-] |\\d+\\. |[ \t]*$"
 }
