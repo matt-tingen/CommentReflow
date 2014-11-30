@@ -93,7 +93,9 @@ The **body** of a comment is the text on a line after the opening.
 In the above example, the body would be `This comment is indented and has a space after the marker`.
 
 Reflowing will ensure that lines within each paragraph are as long as possible without exceeding the specified width (see settings below).
+
 Because all lines in a paragraph have the same opening, if the opening on a line is different from the previous line (e.g. different whitespace after the marker), a new paragraph will begin.
+
 A new paragraph will also be forced if the body of a line is matched by the regular expression in the setting `comment_reflow_new_paragraph_regex`.
 
 ## Settings
@@ -102,35 +104,47 @@ A new paragraph will also be forced if the body of a line is matched by the regu
 
 ### `comment_reflow_width`
 **Purpose:** Defines the max width for each line.
+
 **Default:** `rulers_first`
+
 **Values:** Positive integer or string starting with `rulers_`.
 If a string, the text following `rulers_` specify which of the built-in rulers (setting name `rulers`, value should be a list of integers) to use to define the max width. It can be `rulers_first`, `rulers_last`, or `rulers_<n>` where `<n>` is the index of ruler to use. The index may be negative to index from the back of the list. If the index specified is out of bounds, the closest in-bounds index will be used.
 If this setting is set to use the rulers but `rulers` is empty, `comment_reflow_width_fallback` will be used
 
 ### `comment_reflow_width_fallback`
 **Purpose:** Defines a fallback max width for when it is supposed to be determined from the rulers but there are none.
+
 **Default:** `80`
+
 **Values:** Positive integer
 
 ### `comment_reflow_break_long_words`
 **Purpose:** Defines whether words longer than the max width should be broken to fit in the width.
+
 **Default:** `false`
+
 **Values:** `true` or `false`
 
 ### `comment_reflow_break_on_hyphens`
 **Purpose:** Defines whether hyphenated words may be broken after the hyphen.
+
 **Default:** `true`
+
 **Values:** `true` or `false`
 
 ### `comment_reflow_marker`
 **Purpose:** Define the marker for languages for which it is not already defined.
+
 **Default:** no default value
+
 **Values:** String containing the marker.
 Unless using this specifically for a language with no marker, `comment_reflow_comment_start_regex` is the preferred setting for defining line openings.
 
 ### `comment_reflow_opening_regex`
 **Purpose:** Defines the opening for each line.
+
 **Default:** `[ \t]*{marker}{marker_repeat}[ \t]*`
+
 **Values:** String containing a regular expression.
 `{marker}` will be replaced with the language's marker. If the marker is a single character repeated twice (e.g. `//` or `--`), `{marker}` will only be one of the characters, not two. 
 `{repeat}` will be replaced with the necessary repetition for the marker character. It will allow more than than what is required by the language. For example, in python, `{marker}{marker_repeat}` will expand to `#+` and in C, it will expand to `/{2,}`.
@@ -139,7 +153,9 @@ Unless using this specifically for a language with no marker, `comment_reflow_co
 
 ### `comment_reflow_new_paragraph_regex`
 **Purpose:** Defines whether the body of a line should force a new paragraph.
+
 **Default:** `[*+-] |\d+[).] |[ \t]*$`
 Matches Markdown-style lists or when the entire body is whitespace or empty.
+
 **Values:** String containing a regular expression.
 If the regex matches the body of the line, a new paragraph will begin including that line.
