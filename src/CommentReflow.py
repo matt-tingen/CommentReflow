@@ -56,15 +56,15 @@ class ReflowComment:
     tab_size = 4
     break_long_words = False
     break_on_hyphens = True
-    comment_start_regex = None
+    opening_regex = None
     new_paragraph_regex = None
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        if not self.marker and not self.comment_start_regex:
-            raise ValueError("Must provide either 'marker' or 'comment_start_regex'")
+        if not self.marker and not self.opening_regex:
+            raise ValueError("Must provide either 'marker' or 'opening_regex'")
 
     def indention_length(self, indention):
         return len(indention.replace('\t', ' ' * self.tab_size))
@@ -77,50 +77,50 @@ class ReflowComment:
             return line[len(prefix):]
 
     def reflow(self, text):
-        comment_start_regex = re.compile(self.comment_start_regex or
+        opening_regex = re.compile(self.opening_regex or
                                          r'[ \t]*{}+[ \t]*'.format(self.marker))
         new_paragraph_regex = None if self.new_paragraph_regex is None else re.compile(self.new_paragraph_regex)
 
         # It's easier to do this line by line than to dedent the whole comment
-        # since we have to account for comment_start_regex.
+        # since we have to account for opening_regex.
         #
         # A paragraph is a string to be wrapped. It is not indented and contains
         # no new lines. A new paragraph is started when a line matches one of
         # the following conditions:
-        #     - The "start" of the comment changes
-        #         - The "start" is whatever is matched by comment_start_regex.
-        #     - The rest of the line after the "start" is matched by
-        #     self.new_paragraph_regex
-        # Otherwise it's start is removed and it is concatanated to the end of
+        #     - The opening of the comment changes
+        #         - The opening is whatever is matched by opening_regex.
+        #     - The body is matched by self.new_paragraph_regex
+        #         - The body is what follows the opening of a line
+        # Otherwise it's opening is removed and it is concatanated to the end of
         # the previous paragraph.
         lines = re.split(r'\r?\n', text)
         paragraphs = []
-        prev_start = None
+        prev_opening = None
         current_paragraph = ''
 
         for line in lines:
             try:
-                start = comment_start_regex.match(line).group(0)
+                opening = opening_regex.match(line).group(0)
             except AttributeError:
-                raise ValueError('text contained a line that did not match the comment start regex')
+                raise ValueError('text contained a line that did not match the comment opening regex')
 
-            line_without_start = self.remove_prefix(line, start)
+            body = self.remove_prefix(line, opening)
 
-            force_new_paragraph = new_paragraph_regex is not None and re.match(self.new_paragraph_regex, line_without_start)
+            force_new_paragraph = new_paragraph_regex is not None and re.match(self.new_paragraph_regex, body)
 
-            if (start != prev_start) or force_new_paragraph:
+            if (opening != prev_opening) or force_new_paragraph:
                 # New paragraph
-                if prev_start is not None:
-                    paragraphs.append((prev_start, current_paragraph))
+                if prev_opening is not None:
+                    paragraphs.append((prev_opening, current_paragraph))
 
-                prev_start = start
-                current_paragraph = line_without_start.rstrip()
+                prev_opening = opening
+                current_paragraph = body.rstrip()
             else:
                 # Same paragraph
-                current_paragraph += ' ' + line_without_start.rstrip()
+                current_paragraph += ' ' + body.rstrip()
 
         if current_paragraph:
-            paragraphs.append((prev_start, current_paragraph))
+            paragraphs.append((prev_opening, current_paragraph))
 
         comment = ''
 
@@ -172,11 +172,11 @@ else:
         def replace_lines(self):
             self.view.replace(self.edit, self.region, self.new_comment)
 
-        def get_comment_start(self, settings):
+        def get_opening(self, settings):
             marker = settings.get('comment_reflow_marker')
 
             if marker is None:
-                comment_start_regex = settings.get('comment_reflow_comment_start_regex')
+                opening_regex = settings.get('comment_reflow_opening_regex')
                 scopes = self.view.scope_name(self.view.sel()[0].a).split()
 
                 try:
@@ -203,18 +203,17 @@ else:
                 except (StopIteration, ValueError):
                     # We are not in a comment.line.* scope or we are in one that
                     # is not accounted for.
-                    sublime.status_message('Either comment_reflow_marker or comment_reflow_comment_start_regex is required for this language')
+                    sublime.status_message('Either comment_reflow_marker or comment_reflow_opening_regex is required for this language')
                     return False
 
                 try:
-                    comment_start_regex = comment_start_regex.format(
+                    opening_regex = opening_regex.format(
                         marker=marker_regex, repeat=marker_repeat)
                 except (AttributeError, IndexError, KeyError):
                     whitespace = r'[ \t]*'
-                    comment_start_regex = whitespace + marker_regex + marker_repeat + whitespace
+                    opening_regex = whitespace + marker_regex + marker_repeat + whitespace
 
-                self.preferences['comment_start_regex'] = comment_start_regex
-                print(comment_start_regex)
+                self.preferences['opening_regex'] = opening_regex
             else:
                 self.preferences['marker'] = marker
 
@@ -260,7 +259,7 @@ else:
             settings = self.view.settings()
             self.preferences = {}
 
-            if not self.get_comment_start(settings):
+            if not self.get_opening(settings):
                 return False
 
             self.get_max_width(settings)

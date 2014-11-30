@@ -135,7 +135,7 @@ class TestCustomSettings:
     rf = ReflowComment(
         max_width=40,
         tab_size=4,
-        comment_start_regex=r'[ \t]*(?://|[/ ]\*)[ \t]*')
+        opening_regex=r'[ \t]*(?://|[/ ]\*)[ \t]*')
     reflow = rf.reflow
 
     def test_block_comment_indented(self):
