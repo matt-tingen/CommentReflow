@@ -1,6 +1,8 @@
 {
 	"comment_reflow_width": "rulers_first",
 
+	"comment_reflow_width_fallback": 80,
+
 	"comment_reflow_break_long_words": false,
 
 	"comment_reflow_break_on_hyphens": true,
