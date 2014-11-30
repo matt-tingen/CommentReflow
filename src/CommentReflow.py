@@ -176,7 +176,8 @@ else:
             marker = settings.get('comment_reflow_marker')
 
             if marker is None:
-                opening_regex = settings.get('comment_reflow_opening_regex')
+                opening_regex = settings.get('comment_reflow_opening_regex',
+                                             r'[ \t]*{marker}{marker_repeat}[ \\]*')
                 scopes = self.view.scope_name(self.view.sel()[0].a).split()
 
                 try:
@@ -185,19 +186,19 @@ else:
 
                     if comment_type == 'number-sign':
                         marker_regex = '#'
-                        marker_repeat = '+'
+                        marker_repeat = 1
                     elif comment_type == 'double-slash':
                         marker_regex = '/'
-                        marker_repeat = '{2,}'
+                        marker_repeat = 2
                     elif comment_type == 'apostrophe':
                         marker_regex = '\''
-                        marker_repeat = '+'
+                        marker_repeat = 1
                     elif comment_type == 'double-dash':
                         marker_regex = r'\-'
-                        marker_repeat = '{2,}'
+                        marker_repeat = 2
                     elif comment_type == 'semicolon':
                         marker_regex = ';'
-                        marker_repeat = '+'
+                        marker_repeat = 1
                     else:
                         raise ValueError
                 except (StopIteration, ValueError):
@@ -206,14 +207,13 @@ else:
                     sublime.status_message('Either comment_reflow_marker or comment_reflow_opening_regex is required for this language')
                     return False
 
-                try:
-                    opening_regex = opening_regex.format(
-                        marker=marker_regex, repeat=marker_repeat)
-                except (AttributeError, IndexError, KeyError):
-                    whitespace = r'[ \t]*'
-                    opening_regex = whitespace + marker_regex + marker_repeat + whitespace
-
-                self.preferences['opening_regex'] = opening_regex
+                # Don't use .format so that literal braces don't have to be
+                # escaped.
+                self.preferences['opening_regex'] = (opening_regex
+                        .replace('{marker}', marker_regex)
+                        .replace('{repeat}', '+' if marker_repeat == 1 else '{' + str(marker_repeat) + ',}')
+                        .replace('{repeat_strict}', '' if marker_repeat == 1 else '{' + str(marker_repeat) + '}')
+                    )
             else:
                 self.preferences['marker'] = marker
 
