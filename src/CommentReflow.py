@@ -209,11 +209,15 @@ else:
 
                 # Don't use .format so that literal braces don't have to be
                 # escaped.
-                self.preferences['opening_regex'] = (opening_regex
-                        .replace('{marker}', marker_regex)
-                        .replace('{repeat}', '+' if marker_repeat == 1 else '{' + str(marker_repeat) + ',}')
-                        .replace('{repeat_strict}', '' if marker_repeat == 1 else '{' + str(marker_repeat) + '}')
-                    )
+                replacements = (
+                    '{marker}'       , marker_regex,
+                    '{repeat}'       , '+' if marker_repeat == 1 else '{' + str(marker_repeat) + ',}',
+                    '{repeat_strict}', '' if marker_repeat == 1 else '{' + str(marker_repeat) + '}')
+
+                for old, new in replacements:
+                    opening_regex = opening_regex.replace(old, new)
+
+                self.preferences['opening_regex'] = opening_regex
             else:
                 self.preferences['marker'] = marker
 
