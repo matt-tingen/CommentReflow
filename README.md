@@ -127,7 +127,7 @@ If this setting is set to use the rulers but `rulers` is empty, `comment_reflow_
 **Default:** no default value<br>
 **Values:** String containing the marker.
 
-Unless using this specifically for a language with no marker, `comment_reflow_comment_start_regex` is the preferred setting for defining line openings.
+Unless using this specifically for a language with no marker, `comment_reflow_opening_regex` is the preferred setting for defining line openings.
 
 ### `comment_reflow_opening_regex`
 **Purpose:** Defines the opening for each line.<br>
