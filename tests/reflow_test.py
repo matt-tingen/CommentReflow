@@ -26,8 +26,6 @@ class TestBasic:
 # This is just a single line that needs to be wrapped because it is too long
 # even though it doesn't have any indention"""
 
-        actual = actual
-        desired = desired
         assert actual == desired
 
     def test_two_incorrectly_wrapped_lines(self):
@@ -38,8 +36,6 @@ class TestBasic:
 # This is just a single line that needs to be wrapped because it is too long
 # even though it doesn't have any indention"""
 
-        actual = actual
-        desired = desired
         assert actual == desired
 
     def test_three_incorrectly_wrapped_lines(self):
@@ -51,8 +47,6 @@ class TestBasic:
 # This is just a single line that needs to be wrapped because it is too long
 # even though it doesn't have any indention"""
 
-        actual = actual
-        desired = desired
         assert actual == desired
 
     def test_indented_with_spaces(self):
@@ -127,8 +121,7 @@ class TestBasic:
     #     hendrerit.
     # Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit
     # amet vitae augue."""
-        print(actual)
-        print(desired)
+
         assert actual == desired
 
 class TestCustomSettings:
@@ -153,8 +146,6 @@ class TestCustomSettings:
      * at the start. third line
      */"""
 
-        actual = actual
-        desired = desired
         assert actual == desired
 
     def test_c_like_comments(self):
@@ -169,6 +160,4 @@ class TestCustomSettings:
     // line, if wrapped, would naively
     // use "/*" at the start. third line"""
 
-        print(actual)
-        print(desired)
         assert actual == desired
